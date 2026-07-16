@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'progressivo.state.v1';
-  const APP_VERSION = 12;
+  const APP_VERSION = 11;
   const KG_TO_LB = 2.2046226218;
 
   const app = document.querySelector('#app');
@@ -42,8 +42,6 @@
     progressMetric: 'weight',
     progressRange: '90',
     expandedDays: new Set(),
-    calendarMonth: new Date(new Date().getFullYear(), new Date().getMonth(), 1),
-    calendarSelectedDate: localDateKey(new Date()),
   };
 
   function uid(prefix = 'id') {
@@ -137,46 +135,6 @@
     d.setHours(0, 0, 0, 0);
     d.setDate(d.getDate() - days);
     return d;
-  }
-
-  function localDateKey(value = new Date()) {
-    const date = value instanceof Date ? new Date(value) : new Date(value);
-    if (Number.isNaN(date.getTime())) return localDateKey(new Date());
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  }
-
-  function normalizeDateKey(value = '') {
-    const raw = String(value || '').trim();
-    const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (!match) return localDateKey(new Date());
-    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]), 12, 0, 0, 0);
-    return Number.isNaN(date.getTime()) ? localDateKey(new Date()) : localDateKey(date);
-  }
-
-  function dateFromKey(key) {
-    const normalized = normalizeDateKey(key);
-    const [year, month, day] = normalized.split('-').map(Number);
-    return new Date(year, month - 1, day, 12, 0, 0, 0);
-  }
-
-  function sessionDateForSchedule(key) {
-    const selected = dateFromKey(key);
-    const now = new Date();
-    selected.setHours(now.getHours(), now.getMinutes(), now.getSeconds(), now.getMilliseconds());
-    return selected.toISOString();
-  }
-
-  function addDaysToKey(key, days) {
-    const date = dateFromKey(key);
-    date.setDate(date.getDate() + Number(days || 0));
-    return localDateKey(date);
-  }
-
-  function monthTitle(date) {
-    return new Intl.DateTimeFormat('it-IT', { month: 'long', year: 'numeric' }).format(date);
   }
 
   function isStandalone() {
@@ -379,7 +337,6 @@
       },
       plans: [normalizePlan(createSeedPlan())],
       sessions: [],
-      scheduledWorkouts: [],
       activeSession: null,
       preferences: {
         installDismissed: false,
@@ -719,22 +676,6 @@
     };
   }
 
-  function normalizeScheduledWorkout(item) {
-    if (!item || typeof item !== 'object') return null;
-    const status = ['planned', 'completed', 'skipped'].includes(item.status) ? item.status : 'planned';
-    return {
-      id: item.id || uid('schedule'),
-      date: normalizeDateKey(item.date),
-      planId: String(item.planId || ''),
-      dayId: String(item.dayId || ''),
-      status,
-      sessionId: String(item.sessionId || ''),
-      notes: String(item.notes || ''),
-      createdAt: item.createdAt || new Date().toISOString(),
-      completedAt: item.completedAt || '',
-    };
-  }
-
   function normalizeState(input) {
     const base = createDefaultState();
     if (!input || typeof input !== 'object') return base;
@@ -748,7 +689,6 @@
       },
       plans: Array.isArray(input.plans) ? input.plans.map(normalizePlan) : base.plans,
       sessions: Array.isArray(input.sessions) ? input.sessions.map(session => normalizeSession(session)).filter(Boolean) : [],
-      scheduledWorkouts: Array.isArray(input.scheduledWorkouts) ? input.scheduledWorkouts.map(normalizeScheduledWorkout).filter(Boolean) : [],
       activeSession: input.activeSession && typeof input.activeSession === 'object' ? normalizeSession(input.activeSession, true) : null,
       preferences: {
         installDismissed: Boolean(input.preferences?.installDismissed),
@@ -779,9 +719,6 @@
       return false;
     }
   }
-
-  // Persist normalized migrations (including the calendar introduced in v12) immediately.
-  saveState({ silent: true });
 
   function toast(message, type = '') {
     const el = document.createElement('div');
@@ -880,41 +817,6 @@
 
   function getDay(planId, dayId) {
     return getPlan(planId)?.days.find(day => day.id === dayId);
-  }
-
-  function getScheduledWorkout(scheduleId) {
-    return state.scheduledWorkouts.find(item => item.id === scheduleId) || null;
-  }
-
-  function resolveScheduledWorkout(item) {
-    if (!item) return null;
-    const plan = getPlan(item.planId);
-    const day = getDay(item.planId, item.dayId);
-    if (!plan || !day) return null;
-    return { item, plan, day };
-  }
-
-  function scheduledWorkoutsForDate(dateKey) {
-    return state.scheduledWorkouts
-      .filter(item => item.date === normalizeDateKey(dateKey))
-      .sort((a, b) => {
-        const order = { planned: 0, completed: 1, skipped: 2 };
-        return (order[a.status] ?? 9) - (order[b.status] ?? 9) || a.createdAt.localeCompare(b.createdAt);
-      });
-  }
-
-  function upcomingScheduledWorkouts(limit = 4) {
-    const today = localDateKey(new Date());
-    return [...state.scheduledWorkouts]
-      .filter(item => item.date >= today && item.status === 'planned' && resolveScheduledWorkout(item))
-      .sort((a, b) => a.date.localeCompare(b.date) || a.createdAt.localeCompare(b.createdAt))
-      .slice(0, limit);
-  }
-
-  function scheduleStatusLabel(status) {
-    if (status === 'completed') return 'Completato';
-    if (status === 'skipped') return 'Saltato';
-    return 'Programmato';
   }
 
   function getSessionVolume(session) {
@@ -1075,7 +977,6 @@
 
     if (route === 'plan' && id) return renderPlan(id);
     if (route === 'plans') return renderPlans();
-    if (route === 'calendar') return renderCalendar();
     if (route === 'workout') return renderWorkout();
     if (route === 'progress') return renderProgress();
     if (route === 'profile') return renderProfile();
@@ -1092,11 +993,7 @@
     const goal = state.profile.weeklyGoal || 3;
     const goalProgress = clamp(Math.round((weekSessions.length / goal) * 100), 0, 100);
     const recentSessions = [...state.sessions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
-    const todayKey = localDateKey(now);
-    const todaySchedules = scheduledWorkoutsForDate(todayKey);
-    const todayPlanned = todaySchedules.map(resolveScheduledWorkout).find(entry => entry?.item?.status === 'planned');
-    const todayCompleted = todaySchedules.map(resolveScheduledWorkout).find(entry => entry?.item?.status === 'completed');
-    const upcoming = upcomingScheduledWorkouts(4);
+    const suggestion = findSuggestedWorkout();
     const active = state.activeSession;
 
     setHeader('IL TUO ALLENAMENTO', `Ciao, ${state.profile.name.split(/\s+/)[0] || 'Atleta'}`);
@@ -1112,68 +1009,27 @@
           <button type="button" class="button" data-action="navigate" data-route="workout">Riprendi</button>
           <span class="hero-status-pill">Fantasma attivo</span>
         </div>
-      </section>` : todayPlanned ? `
+      </section>` : suggestion ? `
       <section class="card hero-card hero-media-card">
         <div class="hero-copy">
-          <div class="hero-kicker"><span class="hero-kicker-dot"></span> ALLENAMENTO DI OGGI</div>
-          <h2>${escapeHtml(todayPlanned.day.name)}</h2>
-          <p class="no-margin">${escapeHtml(todayPlanned.plan.name)} · ${todayPlanned.day.exercises.length} esercizi</p>
+          <div class="hero-kicker"><span class="hero-kicker-dot"></span> PROSSIMO ALLENAMENTO</div>
+          <h2>${escapeHtml(suggestion.day.name)}</h2>
+          <p class="no-margin">${escapeHtml(suggestion.day.notes || suggestion.plan.name)} · ${suggestion.day.exercises.length} esercizi</p>
         </div>
         <div class="hero-actions">
-          <button type="button" class="button" data-action="start-scheduled-workout" data-schedule-id="${escapeHtml(todayPlanned.item.id)}">Inizia ora <span aria-hidden="true">›</span></button>
-          <button type="button" class="button secondary" data-action="navigate" data-route="calendar">Apri calendario <span aria-hidden="true">›</span></button>
-        </div>
-      </section>` : todayCompleted ? `
-      <section class="card hero-card hero-media-card hero-completed">
-        <div class="hero-copy">
-          <div class="hero-kicker"><span class="hero-kicker-dot"></span> ALLENAMENTO COMPLETATO</div>
-          <h2>${escapeHtml(todayCompleted.day.name)}</h2>
-          <p class="no-margin">${escapeHtml(todayCompleted.plan.name)} · oggi hai portato a termine il programma.</p>
-        </div>
-        <div class="hero-actions">
-          ${todayCompleted.item.sessionId ? `<button type="button" class="button" data-action="session-detail" data-session-id="${escapeHtml(todayCompleted.item.sessionId)}">Vedi sessione</button>` : ''}
-          <button type="button" class="button secondary" data-action="navigate" data-route="calendar">Calendario</button>
-        </div>
-      </section>` : state.plans.some(plan => plan.days.some(day => day.exercises.length)) ? `
-      <section class="card hero-card hero-media-card">
-        <div class="hero-copy">
-          <div class="hero-kicker"><span class="hero-kicker-dot"></span> DECIDI TU IL PROGRAMMA</div>
-          <h2>Nessun allenamento pianificato</h2>
-          <p class="no-margin">Scegli dal calendario quale giorno della scheda vuoi eseguire oggi.</p>
-        </div>
-        <div class="hero-actions">
-          <button type="button" class="button" data-action="schedule-workout" data-date="${escapeHtml(todayKey)}">Pianifica oggi <span aria-hidden="true">›</span></button>
-          <button type="button" class="button secondary" data-action="navigate" data-route="workout">Allenamento libero</button>
+          <button type="button" class="button" data-action="start-workout" data-plan-id="${escapeHtml(suggestion.plan.id)}" data-day-id="${escapeHtml(suggestion.day.id)}">Inizia ora <span aria-hidden="true">›</span></button>
+          <button type="button" class="button secondary" data-action="navigate" data-route="plans">Vedi schede <span aria-hidden="true">›</span></button>
         </div>
       </section>` : `
       <section class="card hero-card hero-media-card">
         <div class="hero-copy">
           <div class="hero-kicker"><span class="hero-kicker-dot"></span> PRIMO PASSO</div>
           <h2>Crea la tua prima scheda</h2>
-          <p class="no-margin">Aggiungi giorni ed esercizi, poi pianificali sul calendario.</p>
+          <p class="no-margin">Aggiungi giorni ed esercizi, poi sfida il tuo Fantasma.</p>
         </div>
         <div class="hero-actions">
           <button type="button" class="button" data-action="new-plan">Crea scheda</button>
         </div>
-      </section>`;
-
-    const planningOverview = `
-      <section class="card calendar-overview-card">
-        <div class="section-header compact">
-          <div>
-            <p class="eyebrow">CALENDARIO</p>
-            <h2 class="no-margin">La tua programmazione</h2>
-          </div>
-          <button type="button" class="button small secondary" data-action="navigate" data-route="calendar">Apri</button>
-        </div>
-        ${upcoming.length ? `<div class="calendar-upcoming-list">${upcoming.map(item => {
-          const resolved = resolveScheduledWorkout(item);
-          return resolved ? `<button type="button" class="calendar-upcoming-row" data-action="calendar-open-date" data-date="${escapeHtml(item.date)}">
-            <span class="calendar-upcoming-date"><strong>${dateFromKey(item.date).getDate()}</strong><small>${new Intl.DateTimeFormat('it-IT', { month: 'short' }).format(dateFromKey(item.date))}</small></span>
-            <span class="grow"><strong>${escapeHtml(resolved.day.name)}</strong><small>${escapeHtml(resolved.plan.name)}</small></span>
-            <span aria-hidden="true">›</span>
-          </button>` : '';
-        }).join('')}</div>` : `<div class="calendar-empty-inline"><span>Non hai ancora programmato le prossime sessioni.</span><button type="button" class="button small ghost" data-action="schedule-workout" data-date="${escapeHtml(todayKey)}">+ Aggiungi</button></div>`}
       </section>`;
 
     const accountNudge = normalizeCatalogText(state.profile.name) === 'atleta' ? `
@@ -1200,8 +1056,6 @@
     app.innerHTML = `
       <div class="stack-lg">
         ${hero}
-
-        ${planningOverview}
 
         ${accountNudge}
 
@@ -1248,211 +1102,6 @@
             </div>`}
         </section>
       </div>`;
-  }
-
-  function renderCalendar() {
-    const month = ui.calendarMonth instanceof Date && !Number.isNaN(ui.calendarMonth.getTime())
-      ? new Date(ui.calendarMonth.getFullYear(), ui.calendarMonth.getMonth(), 1)
-      : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
-    ui.calendarMonth = month;
-    ui.calendarSelectedDate = normalizeDateKey(ui.calendarSelectedDate);
-
-    const firstGridDate = new Date(month);
-    const mondayOffset = (firstGridDate.getDay() + 6) % 7;
-    firstGridDate.setDate(firstGridDate.getDate() - mondayOffset);
-    const cells = Array.from({ length: 42 }, (_, index) => {
-      const date = new Date(firstGridDate);
-      date.setDate(firstGridDate.getDate() + index);
-      const key = localDateKey(date);
-      const schedules = scheduledWorkoutsForDate(key);
-      return { date, key, schedules };
-    });
-    const selectedDate = dateFromKey(ui.calendarSelectedDate);
-    const selectedItems = scheduledWorkoutsForDate(ui.calendarSelectedDate);
-    const weekdays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
-    const todayKey = localDateKey(new Date());
-
-    setHeader('PIANIFICAZIONE', 'Calendario', { label: '+', ariaLabel: 'Programma allenamento', action: 'schedule-workout', data: { date: ui.calendarSelectedDate } });
-
-    app.innerHTML = `
-      <div class="stack-lg calendar-page">
-        <section class="card calendar-card">
-          <div class="calendar-toolbar">
-            <button type="button" class="icon-button subtle" data-action="calendar-prev-month" aria-label="Mese precedente">‹</button>
-            <button type="button" class="calendar-month-title" data-action="calendar-today">
-              <strong>${escapeHtml(monthTitle(month))}</strong>
-              <small>Torna a oggi</small>
-            </button>
-            <button type="button" class="icon-button subtle" data-action="calendar-next-month" aria-label="Mese successivo">›</button>
-          </div>
-          <div class="calendar-grid calendar-weekdays">${weekdays.map(day => `<span>${day}</span>`).join('')}</div>
-          <div class="calendar-grid calendar-days">
-            ${cells.map(({ date, key, schedules }) => {
-              const outside = date.getMonth() !== month.getMonth();
-              const isToday = key === todayKey;
-              const selected = key === ui.calendarSelectedDate;
-              const completed = schedules.some(item => item.status === 'completed');
-              const planned = schedules.some(item => item.status === 'planned');
-              const skipped = schedules.some(item => item.status === 'skipped');
-              return `<button type="button" class="calendar-day${outside ? ' is-outside' : ''}${isToday ? ' is-today' : ''}${selected ? ' is-selected' : ''}" data-action="select-calendar-date" data-date="${escapeHtml(key)}" aria-label="${escapeHtml(formatDateLong(date))}">
-                <span class="calendar-day-number">${date.getDate()}</span>
-                <span class="calendar-dots" aria-hidden="true">${planned ? '<i class="is-planned"></i>' : ''}${completed ? '<i class="is-completed"></i>' : ''}${skipped ? '<i class="is-skipped"></i>' : ''}</span>
-              </button>`;
-            }).join('')}
-          </div>
-          <div class="calendar-legend">
-            <span><i class="is-planned"></i> Programmato</span>
-            <span><i class="is-completed"></i> Completato</span>
-            <span><i class="is-skipped"></i> Saltato</span>
-          </div>
-        </section>
-
-        <section>
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">GIORNO SELEZIONATO</p>
-              <h2>${escapeHtml(formatDateLong(selectedDate))}</h2>
-            </div>
-            <button type="button" class="button small" data-action="schedule-workout" data-date="${escapeHtml(ui.calendarSelectedDate)}">+ Allenamento</button>
-          </div>
-          <div class="stack">
-            ${selectedItems.length ? selectedItems.map(renderScheduledWorkoutCard).join('') : `
-              <div class="card empty-state calendar-empty-state">
-                <div class="empty-icon">▦</div>
-                <h3>Giornata libera</h3>
-                <p>Scegli una scheda e il relativo giorno. VANTA non dedurrà più automaticamente cosa devi allenare.</p>
-                <button type="button" class="button" data-action="schedule-workout" data-date="${escapeHtml(ui.calendarSelectedDate)}">Pianifica allenamento</button>
-              </div>`}
-          </div>
-        </section>
-
-        <section class="card card-soft calendar-help">
-          <strong>Come funziona</strong>
-          <p class="small muted no-margin">Programma il giorno dal calendario. Quando lo avvii, VANTA collega la sessione alla data scelta e continua a confrontare ogni esercizio con il suo ultimo Fantasma.</p>
-        </section>
-      </div>`;
-  }
-
-  function renderScheduledWorkoutCard(item) {
-    const resolved = resolveScheduledWorkout(item);
-    if (!resolved) {
-      return `<article class="card schedule-card is-missing">
-        <div class="row-between"><div><strong>Scheda non più disponibile</strong><p class="small muted no-margin">Il giorno collegato è stato eliminato.</p></div><button type="button" class="button small danger" data-action="delete-schedule" data-schedule-id="${escapeHtml(item.id)}">Rimuovi</button></div>
-      </article>`;
-    }
-    const { plan, day } = resolved;
-    const status = scheduleStatusLabel(item.status);
-    return `<article class="card schedule-card is-${escapeHtml(item.status)}">
-      <div class="row-between schedule-card-head">
-        <div class="grow">
-          <p class="eyebrow">${escapeHtml(plan.name).toUpperCase()}</p>
-          <h3>${escapeHtml(day.name)}</h3>
-          <p class="small muted no-margin">${day.exercises.length} esercizi${item.notes ? ` · ${escapeHtml(item.notes)}` : ''}</p>
-        </div>
-        <span class="schedule-status is-${escapeHtml(item.status)}">${escapeHtml(status)}</span>
-      </div>
-      <div class="exercise-meta schedule-exercises">${day.exercises.slice(0, 5).map(exercise => `<span class="badge">${escapeHtml(exercise.name)}</span>`).join('')}${day.exercises.length > 5 ? `<span class="badge">+${day.exercises.length - 5}</span>` : ''}</div>
-      <div class="row wrap schedule-actions">
-        ${item.status === 'completed' && item.sessionId ? `<button type="button" class="button small" data-action="session-detail" data-session-id="${escapeHtml(item.sessionId)}">Vedi sessione</button>` : ''}
-        ${item.status !== 'completed' ? `<button type="button" class="button small" data-action="start-scheduled-workout" data-schedule-id="${escapeHtml(item.id)}">${item.status === 'skipped' ? 'Allenati comunque' : 'Inizia'}</button>` : ''}
-        ${item.status === 'planned' ? `<button type="button" class="button small secondary" data-action="edit-schedule" data-schedule-id="${escapeHtml(item.id)}">Modifica</button><button type="button" class="button small ghost" data-action="skip-schedule" data-schedule-id="${escapeHtml(item.id)}">Segna saltato</button>` : ''}
-        ${item.status === 'skipped' ? `<button type="button" class="button small secondary" data-action="restore-schedule" data-schedule-id="${escapeHtml(item.id)}">Ripristina</button>` : ''}
-        <button type="button" class="button small ghost" data-action="delete-schedule" data-schedule-id="${escapeHtml(item.id)}">Rimuovi</button>
-      </div>
-    </article>`;
-  }
-
-  function openScheduleWorkoutModal(dateKey = ui.calendarSelectedDate, scheduleId = '') {
-    const existing = scheduleId ? getScheduledWorkout(scheduleId) : null;
-    const available = state.plans.flatMap(plan => plan.days
-      .filter(day => day.exercises.length)
-      .map(day => ({ plan, day })));
-    if (!available.length) {
-      toast('Crea prima una scheda con almeno un esercizio.', 'error');
-      navigate('plans');
-      return;
-    }
-    const selectedValue = existing ? `${existing.planId}::${existing.dayId}` : `${available[0].plan.id}::${available[0].day.id}`;
-    openModal({
-      eyebrow: existing ? 'MODIFICA CALENDARIO' : 'PIANIFICA',
-      title: existing ? 'Modifica allenamento' : 'Scegli l’allenamento',
-      body: `
-        <div class="form-grid">
-          <div class="input-group">
-            <label for="schedule-date">Data</label>
-            <input id="schedule-date" class="input" name="date" type="date" required value="${escapeHtml(existing?.date || normalizeDateKey(dateKey))}">
-          </div>
-          <div class="input-group">
-            <label for="schedule-workout-choice">Scheda e giorno</label>
-            <select id="schedule-workout-choice" class="select" name="choice" required>
-              ${available.map(({ plan, day }) => {
-                const value = `${plan.id}::${day.id}`;
-                return `<option value="${escapeHtml(value)}" ${value === selectedValue ? 'selected' : ''}>${escapeHtml(plan.name)} — ${escapeHtml(day.name)}</option>`;
-              }).join('')}
-            </select>
-          </div>
-          <div class="input-group">
-            <label for="schedule-notes">Nota facoltativa</label>
-            <textarea id="schedule-notes" class="textarea" name="notes" placeholder="Esempio: allenamento serale, palestra diversa…">${escapeHtml(existing?.notes || '')}</textarea>
-          </div>
-        </div>`,
-      actions: `<button type="button" class="button secondary" data-action="close-modal">Annulla</button><button type="submit" class="button" value="save">${existing ? 'Salva modifiche' : 'Aggiungi al calendario'}</button>`,
-      onSubmit: form => {
-        const selectedDate = normalizeDateKey(form.get('date'));
-        const [planId, dayId] = String(form.get('choice') || '').split('::');
-        const plan = getPlan(planId);
-        const day = getDay(planId, dayId);
-        if (!plan || !day) {
-          toast('La scheda selezionata non è più disponibile.', 'error');
-          return;
-        }
-        if (state.scheduledWorkouts.some(item => item.id !== existing?.id && item.date === selectedDate && item.planId === planId && item.dayId === dayId && item.status !== 'completed')) {
-          toast('Questo allenamento è già presente nella data scelta.', 'error');
-          return;
-        }
-        if (existing) {
-          existing.date = selectedDate;
-          existing.planId = planId;
-          existing.dayId = dayId;
-          existing.notes = String(form.get('notes') || '').trim();
-        } else {
-          state.scheduledWorkouts.push(normalizeScheduledWorkout({
-            id: uid('schedule'),
-            date: selectedDate,
-            planId,
-            dayId,
-            notes: String(form.get('notes') || '').trim(),
-            status: 'planned',
-            createdAt: new Date().toISOString(),
-          }));
-        }
-        ui.calendarSelectedDate = selectedDate;
-        ui.calendarMonth = new Date(dateFromKey(selectedDate).getFullYear(), dateFromKey(selectedDate).getMonth(), 1);
-        saveState();
-        closeModal();
-        if (getRoute().route !== 'calendar') navigate('calendar');
-        else renderCalendar();
-        toast(existing ? 'Programmazione aggiornata.' : 'Allenamento programmato.', 'success');
-      },
-    });
-  }
-
-  function deleteScheduledWorkout(scheduleId) {
-    const item = getScheduledWorkout(scheduleId);
-    if (!item) return;
-    confirmModal({
-      title: 'Rimuovere dal calendario?',
-      message: item.status === 'completed' ? 'La sessione nello storico non verrà eliminata.' : 'La programmazione verrà rimossa. La scheda resterà disponibile.',
-      confirmLabel: 'Rimuovi',
-      danger: true,
-      onConfirm: () => {
-        state.scheduledWorkouts = state.scheduledWorkouts.filter(entry => entry.id !== scheduleId);
-        if (state.activeSession?.scheduleId === scheduleId) state.activeSession.scheduleId = '';
-        saveState();
-        renderCalendar();
-        toast('Programmazione rimossa.', 'success');
-      },
-    });
   }
 
   function renderSessionListRow(session) {
@@ -1626,7 +1275,7 @@
       </article>`;
   }
 
-  function startWorkout(planId, dayId, options = {}) {
+  function startWorkout(planId, dayId) {
     const plan = getPlan(planId);
     const day = getDay(planId, dayId);
     if (!plan || !day) {
@@ -1639,20 +1288,15 @@
     }
 
     const begin = () => {
-      const startedAt = new Date().toISOString();
-      const schedule = options.scheduleId ? getScheduledWorkout(options.scheduleId) : null;
-      const sessionDate = schedule ? sessionDateForSchedule(schedule.date) : startedAt;
-      if (schedule && schedule.status === 'skipped') schedule.status = 'planned';
+      const now = new Date().toISOString();
       state.activeSession = {
         id: uid('session'),
         planId: plan.id,
         dayId: day.id,
         planName: plan.name,
         dayName: day.name,
-        date: sessionDate,
-        startedAt,
-        scheduleId: schedule?.id || '',
-        scheduledDate: schedule?.date || '',
+        date: now,
+        startedAt: now,
         notes: '',
         exercises: day.exercises.map(exercise => {
           const snapshot = previousExerciseSnapshot(exercise.name, exercise.catalogId, exercise.catalogMode, exercise.muscle);
@@ -1714,8 +1358,6 @@
   function renderWorkoutPicker() {
     setHeader('ALLENAMENTO', 'Scegli una sessione');
     const available = state.plans.flatMap(plan => plan.days.map(day => ({ plan, day })));
-    const todayKey = localDateKey(new Date());
-    const todayScheduled = scheduledWorkoutsForDate(todayKey).map(resolveScheduledWorkout).filter(entry => entry?.item?.status === 'planned');
 
     app.innerHTML = `
       <div class="stack-lg">
@@ -1727,16 +1369,11 @@
           </div>
         </section>
 
-        ${todayScheduled.length ? `<section>
-          <div class="section-header"><div><p class="eyebrow">CALENDARIO</p><h2>Programmato per oggi</h2></div><button type="button" class="button small secondary" data-action="navigate" data-route="calendar">Calendario</button></div>
-          <div class="stack">${todayScheduled.map(({ item }) => renderScheduledWorkoutCard(item)).join('')}</div>
-        </section>` : `<section class="card card-soft row-between wrap"><div><strong>Nessun allenamento programmato oggi</strong><p class="small muted no-margin" style="margin-top:4px">Puoi pianificarne uno oppure iniziare liberamente da una scheda.</p></div><button type="button" class="button small secondary" data-action="schedule-workout" data-date="${escapeHtml(todayKey)}">Pianifica</button></section>`}
-
         <section>
           <div class="section-header">
             <div>
-              <h2>Allenamento libero</h2>
-              <p class="small muted">Scegli un giorno senza aggiungerlo al calendario</p>
+              <h2>Le tue sessioni</h2>
+              <p class="small muted">Scegli un giorno dalla scheda</p>
             </div>
           </div>
           <div class="stack">
@@ -1780,7 +1417,7 @@
             <div class="grow">
               <p class="eyebrow">${escapeHtml(session.planName).toUpperCase()}</p>
               <h2 style="margin:6px 0 4px">${escapeHtml(session.dayName)}</h2>
-              <p class="small muted no-margin">${formatDateLong(session.date)}${session.scheduledDate ? ' · dal calendario' : ''}</p>
+              <p class="small muted no-margin">${formatDateLong(session.date)}</p>
             </div>
             <div class="progress-ring" style="--progress:${progress}"><span>${progress}%</span></div>
           </div>
@@ -1996,14 +1633,6 @@
           })),
         }));
         state.sessions.push(completed);
-        if (completed.scheduleId) {
-          const scheduled = getScheduledWorkout(completed.scheduleId);
-          if (scheduled) {
-            scheduled.status = 'completed';
-            scheduled.sessionId = completed.id;
-            scheduled.completedAt = completed.endedAt;
-          }
-        }
         state.activeSession = null;
         saveState();
         closeModal();
@@ -3322,7 +2951,7 @@
     pendingImportState = normalizeState(importedState);
     confirmModal({
       title: 'Ripristinare il backup?',
-      message: `Il file contiene ${pendingImportState.plans.length} schede, ${pendingImportState.sessions.length} sessioni e ${pendingImportState.scheduledWorkouts.length} allenamenti programmati. I dati attuali verranno sostituiti.`,
+      message: `Il file contiene ${pendingImportState.plans.length} schede e ${pendingImportState.sessions.length} sessioni. I dati attuali verranno sostituiti.`,
       confirmLabel: 'Ripristina',
       danger: true,
       onConfirm: () => {
@@ -3750,7 +3379,6 @@
       danger: true,
       onConfirm: () => {
         state.plans = state.plans.filter(item => item.id !== planId);
-        state.scheduledWorkouts = state.scheduledWorkouts.filter(item => item.planId !== planId);
         saveState();
         navigate('plans');
         toast('Scheda eliminata.', 'success');
@@ -3780,7 +3408,6 @@
       danger: true,
       onConfirm: () => {
         plan.days = plan.days.filter(item => item.id !== dayId);
-        state.scheduledWorkouts = state.scheduledWorkouts.filter(item => item.dayId !== dayId);
         ui.expandedDays.delete(dayId);
         saveState();
         renderPlan(planId);
@@ -3821,7 +3448,7 @@
   function resetAllData() {
     confirmModal({
       title: 'Eliminare tutti i dati?',
-      message: 'L’operazione cancellerà definitivamente schede, calendario, sessioni, progressi e impostazioni da questo dispositivo.',
+      message: 'L’operazione cancellerà definitivamente schede, sessioni, progressi e impostazioni da questo dispositivo.',
       confirmLabel: 'Elimina tutto',
       danger: true,
       onConfirm: () => {
@@ -3845,12 +3472,6 @@
       danger: true,
       onConfirm: () => {
         state.sessions = state.sessions.filter(item => item.id !== sessionId);
-        const scheduled = state.scheduledWorkouts.find(item => item.sessionId === sessionId);
-        if (scheduled) {
-          scheduled.status = 'planned';
-          scheduled.sessionId = '';
-          scheduled.completedAt = '';
-        }
         saveState();
         renderProgress();
         toast('Sessione eliminata.', 'success');
@@ -3956,87 +3577,6 @@
       case 'move-exercise':
         moveExercise(target.dataset.planId, target.dataset.dayId, target.dataset.exerciseId, target.dataset.direction);
         break;
-      case 'schedule-workout':
-        openScheduleWorkoutModal(target.dataset.date || ui.calendarSelectedDate);
-        break;
-      case 'edit-schedule':
-        openScheduleWorkoutModal('', target.dataset.scheduleId);
-        break;
-      case 'delete-schedule':
-        deleteScheduledWorkout(target.dataset.scheduleId);
-        break;
-      case 'start-scheduled-workout': {
-        const scheduled = getScheduledWorkout(target.dataset.scheduleId);
-        if (!scheduled) {
-          toast('Programmazione non trovata.', 'error');
-          break;
-        }
-        const launch = () => startWorkout(scheduled.planId, scheduled.dayId, { scheduleId: scheduled.id });
-        if (scheduled.date > localDateKey(new Date())) {
-          confirmModal({
-            title: 'Avviare in anticipo?',
-            message: `L’allenamento è programmato per ${formatDate(dateFromKey(scheduled.date), { year: true })}. La sessione verrà registrata con quella data.`,
-            confirmLabel: 'Avvia comunque',
-            onConfirm: launch,
-          });
-        } else {
-          launch();
-        }
-        break;
-      }
-      case 'skip-schedule': {
-        const scheduled = getScheduledWorkout(target.dataset.scheduleId);
-        if (scheduled) {
-          scheduled.status = 'skipped';
-          saveState();
-          renderCalendar();
-          toast('Allenamento segnato come saltato.', 'success');
-        }
-        break;
-      }
-      case 'restore-schedule': {
-        const scheduled = getScheduledWorkout(target.dataset.scheduleId);
-        if (scheduled) {
-          scheduled.status = 'planned';
-          saveState();
-          renderCalendar();
-          toast('Allenamento ripristinato.', 'success');
-        }
-        break;
-      }
-      case 'select-calendar-date': {
-        const selected = normalizeDateKey(target.dataset.date);
-        ui.calendarSelectedDate = selected;
-        const selectedDate = dateFromKey(selected);
-        if (selectedDate.getMonth() !== ui.calendarMonth.getMonth() || selectedDate.getFullYear() !== ui.calendarMonth.getFullYear()) {
-          ui.calendarMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
-        }
-        renderCalendar();
-        break;
-      }
-      case 'calendar-prev-month':
-        ui.calendarMonth = new Date(ui.calendarMonth.getFullYear(), ui.calendarMonth.getMonth() - 1, 1);
-        renderCalendar();
-        break;
-      case 'calendar-next-month':
-        ui.calendarMonth = new Date(ui.calendarMonth.getFullYear(), ui.calendarMonth.getMonth() + 1, 1);
-        renderCalendar();
-        break;
-      case 'calendar-today': {
-        const today = new Date();
-        ui.calendarMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-        ui.calendarSelectedDate = localDateKey(today);
-        renderCalendar();
-        break;
-      }
-      case 'calendar-open-date': {
-        const selected = normalizeDateKey(target.dataset.date);
-        const date = dateFromKey(selected);
-        ui.calendarSelectedDate = selected;
-        ui.calendarMonth = new Date(date.getFullYear(), date.getMonth(), 1);
-        navigate('calendar');
-        break;
-      }
       case 'start-workout':
         startWorkout(target.dataset.planId, target.dataset.dayId);
         break;

@@ -1,7 +1,7 @@
 {
   "name": "VANTA — Diario di allenamento",
   "short_name": "VANTA",
-  "description": "Calendario selezionabile, Fantasma, catalogo esercizi, OCR e importazione universale da PDF, foto, Word, fogli, presentazioni e Note.",
+  "description": "Fantasma, catalogo esercizi, OCR e importazione universale da PDF, foto, Word, fogli, presentazioni e Note.",
   "lang": "it",
   "start_url": "./",
   "scope": "./",
