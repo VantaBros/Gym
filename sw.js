@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vanta-v11-universal-import';
+const CACHE_NAME = 'vanta-v12-selectable-calendar';
 const APP_SHELL = [
   './',
   './index.html',

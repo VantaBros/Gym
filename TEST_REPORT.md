@@ -1,99 +1,43 @@
-# Report verifiche — VANTA 11.0
+# Report verifiche — VANTA 12
 
-Data verifica: 16 luglio 2026.
+Data test: 16 luglio 2026
 
-## Matrice dei formati verificati
+## Test funzionali automatizzati
 
-Sono stati creati file di prova equivalenti contenenti giorni, esercizi, serie normali, back-off, drop set e piramidali.
+Superati:
 
-| Origine | Esito |
-|---|---|
-| TXT / testo incollato | PASS |
-| Markdown | PASS |
-| CSV e TSV | PASS |
-| RTF | PASS |
-| HTML | PASS |
-| DOCX, paragrafi e tabelle | PASS |
-| XLSX, più fogli e tabelle compatte | PASS |
-| PPTX | PASS |
-| ODT e ODS | PASS |
-| Foto/OCR, flusso completo con risposta OCR controllata | PASS |
-| Pages con anteprima grafica e fallback OCR controllato | PASS |
-| Anteprima UI e salvataggio della scheda | PASS |
+- rendering del calendario con 42 celle;
+- navigazione tra luglio e agosto 2026;
+- sei voci nella navigazione principale;
+- creazione di una programmazione per la data selezionata;
+- persistenza di data, scheda e giorno nello stato locale;
+- Home senza deduzione automatica del prossimo allenamento;
+- visualizzazione dell’allenamento pianificato per oggi;
+- avvio della sessione dal calendario;
+- collegamento tramite `scheduleId`;
+- uso della data selezionata nello storico;
+- completamento della sessione e passaggio automatico a `completed`;
+- collegamento della programmazione alla sessione tramite `sessionId`;
+- stato saltato, ripristino e rimozione;
+- migrazione automatica da stato versione 11 senza calendario;
+- eliminazione delle programmazioni collegate quando si elimina una scheda;
+- assenza di errori JavaScript nei flussi testati.
 
-## Casi specifici verificati
+## Verifica responsive
 
-### Prescrizione verticale
+Test eseguito in Chromium alle larghezze 320, 375, 390, 430 e 768 pixel:
 
-```text
-LAT MACHINE
-2x8-10 + 1 drop set
-```
+- nessun overflow orizzontale in tutte le larghezze;
+- navigazione inferiore contenuta nel viewport;
+- 42 celle del calendario visibili in ogni configurazione;
+- card programmata correttamente renderizzata;
+- verifica specifica 390 × 844 pixel con documento, viewport e navigazione larghi 390 px.
 
-Risultato:
+## Compatibilità progettata
 
-```text
-Esercizio: LAT MACHINE
-Serie: 1 | 2 | DROP
-Target: 8-10 | 8-10 | 8-10
-```
+- Safari iPhone;
+- Chrome Android;
+- Chrome/Edge su PC;
+- PWA installata e uso offline.
 
-### Back-off con target proprio
-
-```text
-Croci manubri 2x10-12 + 1 BO 15
-```
-
-Risultato:
-
-```text
-Serie 1: 10-12
-Serie 2: 10-12
-Serie BO: 15
-```
-
-### Tabella compatta
-
-```text
-Leg Press | 3 + BO | 8-10 + 12-15
-```
-
-Risultato: tre serie da 8-10 più una BO da 12-15.
-
-### Piramidale
-
-```text
-PULLEY 12/10/8/6
-```
-
-Risultato: quattro serie con target 12, 10, 8 e 6.
-
-## Verifiche dell’interfaccia
-
-- Apertura del pannello **Da dove arriva la scheda?**.
-- Selettore file multiplo.
-- Comando fotocamera dedicato.
-- Area per testo copiato da Note.
-- Messaggi di avanzamento.
-- Anteprima con modifica ed esclusione degli esercizi.
-- Importazione finale nella sezione Schede.
-- Nessun errore JavaScript rilevato nei flussi automatici eseguiti.
-
-## Verifiche tecniche
-
-- `app.js`: sintassi valida.
-- `pdf-import.js`: sintassi valida.
-- `universal-import.js`: sintassi valida.
-- `sw.js`: sintassi valida.
-- Versione interna: `11`.
-- Cache PWA: `vanta-v11-universal-import`.
-- Catalogo esercizi invariato: 121 identificatori.
-- Componenti OCR, worker, core WebAssembly e lingue ITA/ENG presenti localmente nel pacchetto.
-
-## Nota sui test OCR reali
-
-Il flusso browser è stato verificato con un worker OCR controllato che restituisce dati nello stesso formato TSV atteso dall’app; sono stati testati preparazione dell’immagine, ricostruzione delle righe, associazione nome/prescrizione, parsing e anteprima. L’ambiente automatico usato durante lo sviluppo blocca l’avvio di Web Worker tramite navigazioni locali, quindi l’esecuzione end-to-end del motore WebAssembly reale va confermata dopo la pubblicazione HTTPS. Tutti i file necessari sono comunque inclusi nel pacchetto e i percorsi sono relativi al dominio dell’app.
-
-## Limiti dichiarati
-
-Non è possibile garantire il riconoscimento perfetto di ogni file e impaginazione esistente. In particolare, scrittura a mano, foto sfocate, tabelle con elementi sovrapposti, password, file danneggiati o formati proprietari senza anteprima possono richiedere una conversione o una correzione manuale. Per questo l’anteprima modificabile rimane obbligatoria prima del salvataggio.
+L’ambiente automatico non sostituisce una prova sul modello esatto di telefono dell’utente, ma i flussi, la persistenza e il layout mobile sono stati verificati in DOM reale e Chromium headless.
