@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'progressivo.state.v1';
-  const APP_VERSION = 12;
+  const APP_VERSION = 13;
   const KG_TO_LB = 2.2046226218;
 
   const app = document.querySelector('#app');
@@ -2264,8 +2264,8 @@
       <svg class="chart-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="Grafico di ${escapeHtml(key)} per ${points.length} sessioni">
         <defs>
           <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#A46CFF"></stop>
-            <stop offset="100%" stop-color="#5C2E91" stop-opacity="0"></stop>
+            <stop offset="0%" stop-color="#60A3D0"></stop>
+            <stop offset="100%" stop-color="#55728F" stop-opacity="0"></stop>
           </linearGradient>
         </defs>
         ${gridLines}
@@ -2973,7 +2973,7 @@
     if (!context) throw new Error('Elaborazione immagine non supportata.');
     context.imageSmoothingEnabled = true;
     context.imageSmoothingQuality = 'high';
-    context.fillStyle = '#0B0A12';
+    context.fillStyle = '#23354B';
     context.fillRect(0, 0, outputSize, outputSize);
     context.drawImage(image, sourceX, sourceY, cropSize, cropSize, 0, 0, outputSize, outputSize);
 

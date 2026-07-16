@@ -1,33 +1,14 @@
-# Aggiornare VANTA a versione 12 su GitHub
+# Aggiornamento a VANTA 13
 
-## Prima dell’aggiornamento
+1. Apri la versione attuale e usa **Profilo → Esporta backup**.
+2. Decomprimi `vanta-webapp-v13-ice-theme.zip`.
+3. Apri il repository GitHub dell’app.
+4. Seleziona **Add file → Upload files**.
+5. Carica tutti i file e tutte le cartelle estratte, sostituendo quelli esistenti.
+6. Verifica il caricamento delle cartelle `assets`, `icons` e `vendor`.
+7. Usa il messaggio `Aggiornamento VANTA 13`.
+8. Conferma con **Commit changes**.
+9. Attendi alcuni minuti, apri GitHub Pages e ricarica due volte.
+10. Chiudi completamente la PWA e riaprila.
 
-Apri l’app attuale e usa:
-
-**Profilo → Esporta backup**
-
-## Caricamento
-
-1. Scarica e decomprimi lo ZIP di VANTA 12.
-2. Accedi a GitHub e apri il repository dell’app.
-3. Seleziona **Add file → Upload files**.
-4. Trascina tutti i file e tutte le cartelle contenuti nello ZIP estratto.
-5. Conferma la sostituzione dei file esistenti.
-6. Inserisci come messaggio: `Aggiornamento VANTA 12`.
-7. Premi **Commit changes**.
-8. Attendi alcuni minuti.
-9. Apri il normale link GitHub Pages in Safari o Chrome e ricaricalo due volte.
-10. Chiudi completamente la PWA installata e riaprila.
-
-In fondo a **Profilo** deve comparire `VANTA v12`.
-
-## File importanti da sostituire
-
-- `app.js`
-- `styles.css`
-- `index.html`
-- `sw.js`
-- `manifest.webmanifest`
-- tutte le cartelle `assets`, `icons` e `vendor`
-
-Non modificare le impostazioni di GitHub Pages e non cambiare dominio: mantenendo lo stesso indirizzo, i dati locali esistenti vengono migrati automaticamente.
+In **Profilo** deve comparire `VANTA v13`. Per vedere la nuova icona potrebbe essere necessario rimuovere e reinstallare il collegamento dalla schermata Home, dopo aver esportato il backup.

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vanta-v12-selectable-calendar';
+const CACHE_NAME = 'vanta-v13-ice-branding';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,9 +11,10 @@ const APP_SHELL = [
   './vendor/pdf.worker.min.js',
   './vendor/jszip.min.js',
   './manifest.webmanifest',
-  './assets/vanta-logo.jpg',
-  './assets/vanta-background.jpg',
-  './assets/vanta-barbell-purple.jpg',
+  './assets/vanta-logo-ice.png',
+  './assets/vanta-logo-source.jpg',
+  './assets/vanta-background-ice.jpg',
+  './assets/vanta-next-workout-ice.jpg',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];

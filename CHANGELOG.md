@@ -1,28 +1,11 @@
-# Changelog — VANTA 12
+# VANTA 13 — Tema ICE
 
-## Calendario selezionabile
-
-- Nuova sezione **Calendario** nella navigazione principale.
-- Vista mensile con 42 celle, selezione del giorno e cambio mese.
-- Programmazione manuale di scheda e giorno per una data precisa.
-- Stato **Programmato**, **Completato** e **Saltato**.
-- Modifica, ripristino, avvio e rimozione delle programmazioni.
-- Collegamento automatico tra programmazione e sessione salvata.
-- Accesso alla sessione completata direttamente dal calendario.
-- Avviso prima di avviare una programmazione futura.
-
-## Home e Allenati
-
-- La Home non deduce più automaticamente il prossimo giorno.
-- Mostra l’allenamento pianificato per oggi oppure invita a sceglierlo.
-- Riquadro con le prossime programmazioni.
-- La schermata Allenati mostra prima gli appuntamenti odierni e mantiene l’allenamento libero.
-
-## Dati e compatibilità
-
-- Nuovo campo `scheduledWorkouts` nello stato locale.
-- Migrazione automatica e immediata dai backup/versioni precedenti.
-- Calendario incluso nei backup JSON.
-- Pulizia delle programmazioni quando una scheda o un giorno vengono eliminati.
-- Cache PWA aggiornata a `vanta-v12-selectable-calendar`.
-- Navigazione mobile ottimizzata a sei voci senza overflow orizzontale.
+- Sostituito il logo VANTA con la nuova versione effetto ghiaccio.
+- Rimossa automaticamente la superficie bianca del logo per integrarlo nell’interfaccia scura.
+- Rigenerate le icone PWA 192×192 e 512×512.
+- Applicato il nuovo background verticale blu ghiaccio a tutte le schermate.
+- Inserita l’immagine orizzontale con cristalli nella card **Prossimo allenamento**.
+- Applicata all’intera app la palette: `#060B13`, `#23354B`, `#304964`, `#515965`, `#55728F`, `#678AA9`, `#60A3D0`, `#ABCDE3`, `#E4E6E8`, `#9A9FA5`.
+- Aggiornati pulsanti, bordi, glow, grafici, Fantasma, calendario, catalogo, modali e campi.
+- Aggiornati tema browser, manifest e cache PWA.
+- Tutte le funzioni di VANTA 12 restano invariate.

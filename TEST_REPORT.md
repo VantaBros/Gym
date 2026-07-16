@@ -1,43 +1,48 @@
-# Report verifiche — VANTA 12
+# Report verifiche — VANTA 13
 
-Data test: 16 luglio 2026
+## Ambito
+Aggiornamento grafico della versione VANTA 12 senza rimuovere o modificare le funzioni di calendario, Fantasma, catalogo, importazione universale, profilo, schede e storico.
 
-## Test funzionali automatizzati
+## Asset verificati
+- Background verticale fornito: `941 × 1672`, applicato all'intera PWA.
+- Immagine orizzontale fornita: `1817 × 866`, applicata alla card **Prossimo allenamento**.
+- Logo fornito: convertito in PNG trasparente `1292 × 682`, mantenendo l'effetto ghiaccio.
+- Icone PWA rigenerate: `192 × 192` e `512 × 512`.
 
-Superati:
+## Palette verificata
+Sono presenti e utilizzati i colori richiesti:
 
-- rendering del calendario con 42 celle;
-- navigazione tra luglio e agosto 2026;
-- sei voci nella navigazione principale;
-- creazione di una programmazione per la data selezionata;
-- persistenza di data, scheda e giorno nello stato locale;
-- Home senza deduzione automatica del prossimo allenamento;
-- visualizzazione dell’allenamento pianificato per oggi;
-- avvio della sessione dal calendario;
-- collegamento tramite `scheduleId`;
-- uso della data selezionata nello storico;
-- completamento della sessione e passaggio automatico a `completed`;
-- collegamento della programmazione alla sessione tramite `sessionId`;
-- stato saltato, ripristino e rimozione;
-- migrazione automatica da stato versione 11 senza calendario;
-- eliminazione delle programmazioni collegate quando si elimina una scheda;
-- assenza di errori JavaScript nei flussi testati.
+- `#060B13`
+- `#23354B`
+- `#304964`
+- `#515965`
+- `#55728F`
+- `#678AA9`
+- `#60A3D0`
+- `#ABCDE3`
+- `#E4E6E8`
+- `#9A9FA5`
 
-## Verifica responsive
+I precedenti codici viola principali non risultano più presenti in CSS o JavaScript.
 
-Test eseguito in Chromium alle larghezze 320, 375, 390, 430 e 768 pixel:
+## Controlli tecnici
+- Sintassi valida per `app.js`, `exercise-catalog.js`, `pdf-import.js`, `universal-import.js` e `sw.js`.
+- Bilanciamento delle parentesi CSS verificato.
+- Manifest JSON valido e tema browser impostato su `#060B13`.
+- Tutti gli asset elencati nel Service Worker esistono.
+- Cache PWA aggiornata a `vanta-v13-ice-branding`.
+- Versione visualizzata nel Profilo: `VANTA v13`.
+- Catalogo invariato: 121 esercizi con identificativi presenti.
 
-- nessun overflow orizzontale in tutte le larghezze;
-- navigazione inferiore contenuta nel viewport;
-- 42 celle del calendario visibili in ogni configurazione;
-- card programmata correttamente renderizzata;
-- verifica specifica 390 × 844 pixel con documento, viewport e navigazione larghi 390 px.
+## Prova interfaccia mobile
+Verifica eseguita a `390 × 844` pixel:
 
-## Compatibilità progettata
+- Home caricata correttamente.
+- Card principale con nuova immagine ICE caricata.
+- Nuovo logo caricato.
+- Navigazione verso Calendario, Profilo e ritorno alla Home funzionante.
+- Nessun errore JavaScript rilevato durante il rendering e la navigazione provata.
+- Larghezza documento uguale alla viewport: nessun overflow orizzontale rilevato.
 
-- Safari iPhone;
-- Chrome Android;
-- Chrome/Edge su PC;
-- PWA installata e uso offline.
-
-L’ambiente automatico non sostituisce una prova sul modello esatto di telefono dell’utente, ma i flussi, la persistenza e il layout mobile sono stati verificati in DOM reale e Chromium headless.
+## Compatibilità
+La struttura tecnica resta la stessa di VANTA 12: PWA responsive basata su HTML, CSS e JavaScript, destinata a Safari su iPhone, Chrome su Android e browser desktop moderni. La verifica non sostituisce una prova su ogni specifico modello fisico e versione del sistema operativo.
