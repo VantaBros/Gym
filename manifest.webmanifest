@@ -1,0 +1,26 @@
+{
+  "name": "VANTA — Diario di allenamento",
+  "short_name": "VANTA",
+  "description": "Calendario selezionabile, Fantasma, catalogo esercizi, OCR e importazione universale da PDF, foto, Word, fogli, presentazioni e Note.",
+  "lang": "it",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#05050A",
+  "theme_color": "#05050A",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#05050A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="VANTA">
+  <meta name="description" content="VANTA: calendario selezionabile, schede, importazione universale, Fantasma dell’allenamento e progressi.">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="icon" type="image/png" href="icons/icon-192.png">
+  <link rel="stylesheet" href="styles.css">
+  <title>VANTA — Diario di allenamento</title>
+</head>
+<body>
+  <div id="app-shell">
+    <header class="topbar">
+      <div class="topbar-brand">
+        <img class="brand-logo" src="assets/vanta-logo.jpg" alt="VANTA">
+        <div class="topbar-copy">
+          <p class="eyebrow" id="screen-eyebrow">IL TUO ALLENAMENTO</p>
+          <h1 id="screen-title">Oggi</h1>
+        </div>
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-button" id="header-action" type="button" aria-label="Azione schermata" hidden></button>
+        <button class="account-button" id="account-button" type="button" data-action="edit-profile" aria-label="Apri account e modifica nome">
+          <span id="account-initials">A</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="app" class="app-content" aria-live="polite"></main>
+
+    <nav class="bottom-nav" aria-label="Navigazione principale">
+      <button type="button" class="nav-item is-active" data-route="home" aria-label="Oggi">
+        <span class="nav-icon" aria-hidden="true">⌂</span>
+        <span>Oggi</span>
+      </button>
+      <button type="button" class="nav-item" data-route="calendar" aria-label="Calendario">
+        <span class="nav-icon" aria-hidden="true">▦</span>
+        <span>Calendario</span>
+      </button>
+      <button type="button" class="nav-item" data-route="plans" aria-label="Schede">
+        <span class="nav-icon" aria-hidden="true">▤</span>
+        <span>Schede</span>
+      </button>
+      <button type="button" class="nav-item nav-item-primary" data-route="workout" aria-label="Allenati">
+        <span class="nav-icon" aria-hidden="true">＋</span>
+        <span>Allenati</span>
+      </button>
+      <button type="button" class="nav-item" data-route="progress" aria-label="Progressi">
+        <span class="nav-icon" aria-hidden="true">↗</span>
+        <span>Progressi</span>
+      </button>
+      <button type="button" class="nav-item" data-route="profile" aria-label="Profilo">
+        <span class="nav-icon" aria-hidden="true">●</span>
+        <span>Profilo</span>
+      </button>
+    </nav>
+  </div>
+
+  <div id="toast-region" class="toast-region" aria-live="assertive" aria-atomic="true"></div>
+
+  <dialog id="modal" class="modal">
+    <form method="dialog" class="modal-card" id="modal-form">
+      <div class="modal-handle" aria-hidden="true"></div>
+      <header class="modal-header">
+        <div>
+          <p class="eyebrow" id="modal-eyebrow">MODIFICA</p>
+          <h2 id="modal-title">Titolo</h2>
+        </div>
+        <button class="icon-button subtle" value="cancel" aria-label="Chiudi" type="submit">×</button>
+      </header>
+      <div id="modal-body" class="modal-body"></div>
+      <footer id="modal-actions" class="modal-actions"></footer>
+    </form>
+  </dialog>
+
+  <input id="import-file" type="file" accept="application/json,.json" hidden>
+  <input id="universal-file" type="file" accept="application/pdf,image/*,.pdf,.docx,.xlsx,.xlsm,.pptx,.odt,.ods,.pages,.numbers,.key,.txt,.md,.csv,.tsv,.rtf,.html,.htm,.eml,.log,.xml" multiple hidden>
+  <input id="camera-file" type="file" accept="image/*" capture="environment" hidden>
+  <input id="profile-image-file" type="file" accept="image/jpeg,image/png,image/webp,image/*" hidden>
+  <script src="vendor/pdf.min.js" defer></script>
+  <script src="vendor/jszip.min.js" defer></script>
+  <script src="exercise-catalog.js" defer></script>
+  <script src="pdf-import.js" defer></script>
+  <script src="universal-import.js" defer></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
