@@ -1853,3 +1853,30 @@ body {
   body { background: radial-gradient(circle at 50% 12%, rgba(85,114,143,.18), transparent 38rem), #03070D; }
   #app-shell { box-shadow: 0 0 88px rgba(0,0,0,.58); }
 }
+
+
+/* =========================================================
+   VANTA 15 — logo header ottimizzato
+   ========================================================= */
+.brand-logo {
+  width: 118px;
+  height: 58px;
+  display: block;
+  flex: 0 0 auto;
+  object-fit: cover;
+  object-position: center;
+  padding: 0;
+  border: 1px solid rgba(171,205,227,.72);
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 0 20px rgba(171,205,227,.24);
+  filter: none;
+}
+@media (max-width: 390px) {
+  .brand-logo { width: 106px; height: 52px; border-radius: 7px; }
+  .topbar-brand { gap: 10px; }
+}
+@media (max-width: 340px) {
+  .brand-logo { width: 92px; height: 48px; }
+  .topbar h1 { font-size: 22px; }
+}

@@ -1,4 +1,4 @@
-# VANTA 14
+# VANTA 15
 
 PWA personale per allenamenti con calendario selezionabile, Fantasma, catalogo esercizi, importazione universale e identità grafica ICE.
 

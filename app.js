@@ -2,7 +2,7 @@
   'use strict';
 
   const STORAGE_KEY = 'progressivo.state.v1';
-  const APP_VERSION = 14;
+  const APP_VERSION = 15;
   const KG_TO_LB = 2.2046226218;
 
   const app = document.querySelector('#app');

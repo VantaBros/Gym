@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vanta-v14-white-logo';
+const CACHE_NAME = 'vanta-v15-header-logo';
 const APP_SHELL = [
   './',
   './index.html',
@@ -11,7 +11,7 @@ const APP_SHELL = [
   './vendor/pdf.worker.min.js',
   './vendor/jszip.min.js',
   './manifest.webmanifest',
-  './assets/vanta-logo-ice.png',
+  './assets/vanta-logo-header.png',
   './assets/vanta-logo-source.jpg',
   './assets/vanta-background-ice.jpg',
   './assets/vanta-next-workout-ice.jpg',

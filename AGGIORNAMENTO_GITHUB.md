@@ -1,14 +1,14 @@
-# Aggiornamento a VANTA 14
+# Aggiornamento a VANTA 15
 
 1. Apri la versione attuale e usa **Profilo → Esporta backup**.
-2. Decomprimi `vanta-webapp-v14-ice-theme.zip`.
+2. Decomprimi `vanta-webapp-v15-ice-theme.zip`.
 3. Apri il repository GitHub dell’app.
 4. Seleziona **Add file → Upload files**.
 5. Carica tutti i file e tutte le cartelle estratte, sostituendo quelli esistenti.
 6. Verifica il caricamento delle cartelle `assets`, `icons` e `vendor`.
-7. Usa il messaggio `Aggiornamento VANTA 14`.
+7. Usa il messaggio `Aggiornamento VANTA 15`.
 8. Conferma con **Commit changes**.
 9. Attendi alcuni minuti, apri GitHub Pages e ricarica due volte.
 10. Chiudi completamente la PWA e riaprila.
 
-In **Profilo** deve comparire `VANTA v14`. Per vedere la nuova icona potrebbe essere necessario rimuovere e reinstallare il collegamento dalla schermata Home, dopo aver esportato il backup.
+In **Profilo** deve comparire `VANTA v15`. Per vedere la nuova icona potrebbe essere necessario rimuovere e reinstallare il collegamento dalla schermata Home, dopo aver esportato il backup.
