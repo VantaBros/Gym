@@ -1,4 +1,4 @@
-const CACHE_NAME = 'vanta-v13-ice-branding';
+const CACHE_NAME = 'vanta-v14-white-logo';
 const APP_SHELL = [
   './',
   './index.html',

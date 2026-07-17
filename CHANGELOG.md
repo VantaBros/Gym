@@ -1,4 +1,4 @@
-# VANTA 13 — Tema ICE
+# VANTA 14 — Tema ICE
 
 - Sostituito il logo VANTA con la nuova versione effetto ghiaccio.
 - Rimossa automaticamente la superficie bianca del logo per integrarlo nell’interfaccia scura.

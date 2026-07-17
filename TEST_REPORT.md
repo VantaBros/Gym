@@ -1,4 +1,4 @@
-# Report verifiche — VANTA 13
+# Report verifiche — VANTA 14
 
 ## Ambito
 Aggiornamento grafico della versione VANTA 12 senza rimuovere o modificare le funzioni di calendario, Fantasma, catalogo, importazione universale, profilo, schede e storico.
@@ -30,8 +30,8 @@ I precedenti codici viola principali non risultano più presenti in CSS o JavaSc
 - Bilanciamento delle parentesi CSS verificato.
 - Manifest JSON valido e tema browser impostato su `#060B13`.
 - Tutti gli asset elencati nel Service Worker esistono.
-- Cache PWA aggiornata a `vanta-v13-ice-branding`.
-- Versione visualizzata nel Profilo: `VANTA v13`.
+- Cache PWA aggiornata a `vanta-v14-ice-branding`.
+- Versione visualizzata nel Profilo: `VANTA v14`.
 - Catalogo invariato: 121 esercizi con identificativi presenti.
 
 ## Prova interfaccia mobile
